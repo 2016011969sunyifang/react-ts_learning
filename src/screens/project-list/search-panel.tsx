@@ -10,6 +10,7 @@ export interface User {
 interface SearchPanelProps{
   users:User[],
   param:{
+    
     name:string;
     personId:string;
   },
