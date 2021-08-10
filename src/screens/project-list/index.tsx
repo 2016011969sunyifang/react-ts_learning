@@ -5,9 +5,9 @@ import { SearchPanel } from "./search-panel"
 import { useState, useEffect} from "react"
 import { cleanObject, useMount,useDebounce } from '../../utils';
 import * as qs from 'qs'
-const apiUrl = process.env.REACT_APP_API_URL;
-console.log(apiUrl);
+import { useHttp } from '../../utils/http';
 export const ProjectListScreen = ()=>{
+  const client = useHttp();
     const [param, setParam] = useState({
         name: "",
         personId: "",
@@ -19,20 +19,11 @@ export const ProjectListScreen = ()=>{
 
     // 获取文章列表
     useEffect(() => {
-      //转换参数
-      fetch(`${apiUrl}/projects?${qs.stringify(cleanObject(debouncedParam))}`).then(async (response) => {
-        if (response.ok) {
-          setList(await response.json());
-        }
-      });
+      client('projects',{data:cleanObject(debouncedParam)}).then(setList)
     }, [debouncedParam]);
     //获取用户列表
     useMount(() => {
-      fetch(`${apiUrl}/users`).then(async (response) => {
-        if (response.ok) {
-            setUsers(await response.json());
-        }
-      });
+      client('users',{data:cleanObject(debouncedParam)}).then(setUsers)
     });
 
     return <div>
