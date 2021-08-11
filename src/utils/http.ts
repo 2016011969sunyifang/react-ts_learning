@@ -1,16 +1,16 @@
 import qs from "qs";
-import * as auth from "./../auth-provider";
-import { useAuth } from "./../context/auth-context";
-// import { useCallback } from "react";
+import * as auth from "context/auth-provider";
+import { useAuth } from "context/auth-context";
 
+// #process.env下自定义变量要以REACT_APP开头
 const apiUrl = process.env.REACT_APP_API_URL;
 
 interface Config extends RequestInit {
+  data?: Object;
   token?: string;
-  data?: object;
 }
 
-export const http = async (
+export const http = (
   endpoint: string,
   { data, token, headers, ...customConfig }: Config = {}
 ) => {
@@ -22,78 +22,57 @@ export const http = async (
     },
     ...customConfig,
   };
-
   if (config.method.toUpperCase() === "GET") {
     endpoint += `?${qs.stringify(data)}`;
   } else {
     config.body = JSON.stringify(data || {});
   }
-
-  // axios 和 fetch 的表现不一样，axios可以直接在返回状态不为2xx的时候抛出异常
-  return window
-    .fetch(`${apiUrl}/${endpoint}`, config)
-    .then(async (response) => {
-      if (response.status === 401) {
-        await auth.logout();
-        window.location.reload();
-        return Promise.reject({ message: "请重新登录" });
-      }
-      const data = await response.json();
-      if (response.ok) {
-        return data;
-      } else {
-        return Promise.reject(data);
-      }
-    });
+  //fetch 对于返回不是2XX的情况不会做错误处理，不同于axios
+  return window.fetch(`${apiUrl}/${endpoint}`, config).then(async (res) => {
+    //token失效,登出、刷新页面
+    if (res.status === 401) {
+      await auth.logout();
+      window.location.reload();
+      return Promise.reject({ message: "请重新登录" });
+    }
+    let data = await res.json();
+    if (res.ok) {
+      return data;
+    } else {
+      return Promise.reject(data);
+    }
+  });
 };
 
-// JS 中的typeof，是在runtime时运行的
-// return typeof 1 === 'number'
-
-// TS 中的typeof，是在静态环境运行的
-// return (...[endpoint, config]: Parameters<typeof http>) =>
 export const useHttp = () => {
   const { user } = useAuth();
-  // utility type 的用法：用泛型给它传入一个其他类型，然后utility type对这个类型进行某种操作
-  return  (...[endpoint, config]: Parameters<typeof http>) => http(endpoint, { ...config, token: user?.token })
+  return (...[endpoint, config]: Parameters<typeof http>) =>
+    http(endpoint, { ...config, token: user?.token });
 };
 
-// // 类型别名、Utility Type 讲解
-// // 联合类型
-// let myFavoriteNumber: string | number;
-// myFavoriteNumber = "seven";
-// myFavoriteNumber = 7;
-// // TS2322: Type '{}' is not assignable to type 'string | number'.
-// // myFavoriteNumber = {}
-// let jackFavoriteNumber: string | number;
+/**
+Parameters
+ * Obtain the parameters of a function type in a tuple
+ * 在元组中获取构造函数类型的参数
+ * 该类型可以获得函数的参数类型组成的元组类型。
+ type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
 
-// // 类型别名在很多情况下可以和interface互换
-// // interface Person {
-// //   name: string
-// // }
-// // type Person = { name: string }
-// // const xiaoMing: Person = {name: 'xiaoming'}
+ Omit
+ * Construct a type with the properties of T except for those in type K.
+ * 构造一个除类型K之外的T属性的类型
+ type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>
 
-// // 类型别名, interface 在这种情况下没法替代type
-// type FavoriteNumber = string | number;
-// let roseFavoriteNumber: FavoriteNumber = "6";
+ Partial
+ * Make all properties in T optional
+ * 让T中的所有属性都是可选的
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+}
 
-// // interface 也没法实现Utility type
-// type Person = {
-//   name: string;
-//   age: number;
-// };
-// 不做约束但是可以有
-// const xiaoMing: Partial<Person> = {};
-// 删除无用的约束
-// const shenMiRen: Omit<Person, "name" | "age"> = {};
-// 遍历键值
-// type PersonKeys = keyof Person;
-// 获取子集
-// type PersonOnlyName = Pick<Person, "name" | "age">;
-// type Age = Exclude<PersonKeys, "name">;
-
-// // Partial 的实现
-// type Partial<T> = {
-//   [P in keyof T]?: T[P];
-// };
+Required
+ * Make all properties in T required
+ * 使T中的所有属性都是必需的
+ type Required<T> = {
+    [P in keyof T]-?: T[P];
+ }
+*/

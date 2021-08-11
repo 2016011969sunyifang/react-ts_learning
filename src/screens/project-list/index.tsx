@@ -1,33 +1,45 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React from 'react'
-import { List } from "./list"
-import { SearchPanel } from "./search-panel"
-import { useState, useEffect} from "react"
-import { cleanObject, useMount,useDebounce } from '../../utils';
-import * as qs from 'qs'
-import { useHttp } from '../../utils/http';
-export const ProjectListScreen = ()=>{
+import { clearnObject, useDebounce, useMount } from "utils/index";
+import { SearchPanel } from "./search-panel";
+import { List } from "./list";
+import { useEffect, useState } from "react";
+import { useHttp } from "utils/http";
+
+export const ProjectListScreen = () => {
+  const [param, setParam] = useState({
+    name: "",
+    personId: "",
+  });
+  const [users, setUsers] = useState([]);
+  const [list, setList] = useState([]);
+  const debounceParam = useDebounce(param, 500);
   const client = useHttp();
-    const [param, setParam] = useState({
-        name: "",
-        personId: "",
-      });
-    const [list, setList] = useState([]);
-    const [users, setUsers] = useState([]);
 
-      const debouncedParam = useDebounce(param,500)
+  useEffect(() => {
+    client("projects", {
+      data: clearnObject(debounceParam),
+    }).then(setList);
 
-    // 获取文章列表
-    useEffect(() => {
-      client('projects',{data:cleanObject(debouncedParam)}).then(setList)
-    }, [debouncedParam]);
-    //获取用户列表
-    useMount(() => {
-      client('users',{data:cleanObject(debouncedParam)}).then(setUsers)
-    });
+    // fetch(`${apiUrl}/projects?${qs.stringify(clearnObject(debounceParam))}`).then(async res => {
+    //     if(res.ok){
+    //         setList(await res.json());
+    //     }
+    // });
+  }, [debounceParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return <div>
-        <SearchPanel users={users} param={param} setParam = {setParam}/>
-        <List  users={users} list={list}/>
+  useMount(() => {
+    client("users").then(setUsers);
+
+    // fetch(`${apiUrl}/users`).then(async res => {
+    //     if(res.ok){
+    //         setUsers(await res.json());
+    //     }
+    // });
+  });
+
+  return (
+    <div>
+      <SearchPanel users={users} param={param} setParam={setParam} />
+      <List users={users} list={list} />
     </div>
-}
+  );
+};
