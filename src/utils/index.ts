@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // object类型可能是{键值对}、函数、数组等多种类型
 
@@ -32,7 +32,7 @@ export const useMount = (callback: () => void) => {
 };
 
 export const useDocumentTitle = (title: string, keepOnUnmount: boolean) => {
-  const oldTitle = document.title;
+  const oldTitle = useRef(document.title).current;
   useEffect(() => {
     document.title = title;
   }, [title]);
@@ -42,5 +42,5 @@ export const useDocumentTitle = (title: string, keepOnUnmount: boolean) => {
         document.title = oldTitle;
       }
     };
-  });
+  }, [keepOnUnmount, oldTitle]);
 };
