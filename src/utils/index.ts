@@ -30,3 +30,17 @@ export const useMount = (callback: () => void) => {
     callback();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 };
+
+export const useDocumentTitle = (title: string, keepOnUnmount: boolean) => {
+  const oldTitle = document.title;
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+  useEffect(() => {
+    return () => {
+      if (!keepOnUnmount) {
+        document.title = oldTitle;
+      }
+    };
+  });
+};

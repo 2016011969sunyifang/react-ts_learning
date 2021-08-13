@@ -1,9 +1,15 @@
-import { clearnObject, useDebounce, useMount } from "utils/index";
+import {
+  clearnObject,
+  useDebounce,
+  useDocumentTitle,
+  useMount,
+} from "utils/index";
 import { SearchPanel } from "./search-panel";
 import { List } from "./list";
 import { useEffect, useState } from "react";
 import { useHttp } from "utils/http";
 import { useAsync } from "utils/use-async";
+import { Helmet } from "react-helmet";
 
 export interface Project {
   id: number;
@@ -15,6 +21,7 @@ export interface Project {
 }
 
 export const ProjectListScreen = () => {
+  useDocumentTitle("项目列表", true);
   const [param, setParam] = useState({
     name: "",
     personId: "",
@@ -60,6 +67,11 @@ export const ProjectListScreen = () => {
 
   return (
     <div>
+      {/* <Helmet>
+        <title>
+          项目列表
+        </title>
+      </Helmet> */}
       <SearchPanel users={users} param={param} setParam={setParam} />
       <List loading={isLoading} users={users} dataSource={list || []} />
     </div>
