@@ -3,7 +3,6 @@ import { ProjectListScreen } from "screens/project-list";
 import { useAuth } from "context/auth-context";
 import styled from "@emotion/styled";
 import { Button, Dropdown, Menu } from "antd";
-//logo
 import { ReactComponent as SoftwareLogo } from "assets/software-logo.svg";
 import { Row } from "components/lib";
 
@@ -25,7 +24,6 @@ export const AuthenticatedApp = () => {
           <span>组员</span>
         </HeaderLeft>
         <HeaderRight>
-          {/* 悬停效果 */}
           <Dropdown overlay={menu}>
             <Button type="link" onClick={(e) => e.preventDefault()}>
               Hi, {user?.name}

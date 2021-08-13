@@ -3,6 +3,16 @@ import { SearchPanel } from "./search-panel";
 import { List } from "./list";
 import { useEffect, useState } from "react";
 import { useHttp } from "utils/http";
+import { useAsync } from "utils/use-async";
+
+export interface Project {
+  id: number;
+  personId: number;
+  name: string;
+  pin: boolean;
+  organization: string;
+  created: number;
+}
 
 export const ProjectListScreen = () => {
   const [param, setParam] = useState({
@@ -10,15 +20,27 @@ export const ProjectListScreen = () => {
     personId: "",
   });
   const [users, setUsers] = useState([]);
-  const [list, setList] = useState([]);
   const debounceParam = useDebounce(param, 500);
   const client = useHttp();
+  const { run, isLoading, data: list } = useAsync<Project[]>();
 
   useEffect(() => {
-    client("projects", {
-      data: clearnObject(debounceParam),
-    }).then(setList);
+    run(client("projects", { data: clearnObject(debounceParam) }));
 
+    //封装了useHttp
+    // client('projects', {
+    //     data: clearnObject(debounceParam)
+    // })
+    // .then(setList)
+    // .catch(err => {
+    //     setList([]);
+    //     setError(err);
+    // })
+    // .finally(() => {
+    //     setLoading(false);
+    // });
+
+    // 最初
     // fetch(`${apiUrl}/projects?${qs.stringify(clearnObject(debounceParam))}`).then(async res => {
     //     if(res.ok){
     //         setList(await res.json());
@@ -39,7 +61,7 @@ export const ProjectListScreen = () => {
   return (
     <div>
       <SearchPanel users={users} param={param} setParam={setParam} />
-      <List users={users} list={list} />
+      <List loading={isLoading} users={users} dataSource={list || []} />
     </div>
   );
 };
