@@ -44,3 +44,6 @@ export const useDocumentTitle = (title: string, keepOnUnmount: boolean) => {
     };
   }, [keepOnUnmount, oldTitle]);
 };
+export const resetRouter = () => {
+  window.location.href = window.location.origin;
+};

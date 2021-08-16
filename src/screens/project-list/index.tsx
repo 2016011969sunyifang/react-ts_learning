@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { useHttp } from "utils/http";
 import { useAsync } from "utils/use-async";
 import { Helmet } from "react-helmet";
+import { useUrlQueryParam } from "utils/url";
+import { useProjectsSearchParams } from "./util";
 
 export interface Project {
   id: number;
@@ -22,10 +24,7 @@ export interface Project {
 
 export const ProjectListScreen = () => {
   useDocumentTitle("项目列表", true);
-  const [param, setParam] = useState({
-    name: "",
-    personId: "",
-  });
+  const [param, setParam] = useProjectsSearchParams();
   const [users, setUsers] = useState([]);
   const debounceParam = useDebounce(param, 500);
   const client = useHttp();
@@ -69,7 +68,7 @@ export const ProjectListScreen = () => {
     <div>
       {/* <Helmet>
         <title>
-          项目列表
+        项目列表
         </title>
       </Helmet> */}
       <SearchPanel users={users} param={param} setParam={setParam} />
@@ -77,3 +76,5 @@ export const ProjectListScreen = () => {
     </div>
   );
 };
+
+// ProjectListScreen.whyDidYouRender = true;
